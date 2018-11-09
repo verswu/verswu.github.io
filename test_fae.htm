@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<!-- saved from url=(0036)http://128.199.143.114/test_fae.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<script>
+	window.facebookAdsToolboxConfig = {
+      hasGzipSupport: 'true',
+      popupOrigin: 'https://www.facebook.com',
+      feedWasDisabled: 'true',
+      platform: 'UEESHOP', // <-- put in your platform name here
+      pixel: {
+        pixelId: '',
+        advanced_matching_supported: true
+      },
+      diaSettingId: '',
+      store: {
+        baseUrl: window.location.protocol + '//' + window.location.host,
+        baseCurrency: 'USD', // <-- put in your currency here
+        canSetupShop: true,
+        timezoneId: '0',
+        storeName: 'Your Store', // <-- put in the merchant store name here
+        plugin_version: '2.1.0' // <-- put in the version of your plugin here
+      },
+      feed: {
+        totalVisibleProducts: 24      },
+      feedPrepared: {
+        feedUrl: '',
+        feedPingUrl: '',
+        samples: []
+      }
+    };
+
+    var launchDiaWizard = function() {
+      // checks if there is an existing DIA wizard popup. If so, close it
+      if (window.sendToFacebook) {
+        window.sendToFacebook('close popup');
+      }
+
+      window.sendToFacebook = openPopup();
+      window.diaConfig = { 'clientSetup': window.facebookAdsToolboxConfig };
+    };
+
+	var openPopup = function() {
+	  var width = 1153;
+	  var height = 808;
+	  var topPos = screen.height/2 - height/2;
+	  var leftPos = screen.width/2 - width/2;
+	  window.originParam = window.location.protocol + '//' + window.location.host + '/admin';
+	  var popupUrl;
+	  if(window.facebookAdsToolboxConfig.popupOrigin.includes('staticxx')) {
+	    window.facebookAdsToolboxConfig.popupOrigin = 'https://www.facebook.com/';
+	  }
+	  window.facebookAdsToolboxConfig.popupOrigin = prepend_protocol(
+	    window.facebookAdsToolboxConfig.popupOrigin
+	  );
+	  popupUrl = window.facebookAdsToolboxConfig.popupOrigin;
+	  var path = '/ads/dia';
+
+	  if (window.facebookAdsToolboxConfig.debug_url) {
+	    console.log(window.facebookAdsToolboxConfig);
+	  }
+
+	  var page = window.open(
+	    popupUrl + '/login.php?display=popup&next=' + encodeURIComponent(popupUrl + path + '?origin=' + window.originParam + '&merchant_settings_id=' + window.facebookAdsToolboxConfig.diaSettingId),
+	    'DiaWizard',
+	    [
+	      'width=' + width,
+	      'height=' + height,
+	      'top=' + topPos,
+	      'left=' + leftPos
+	    ].join(',')
+	  );
+
+	  return function (type, params) {
+	    if (type === 'close popup') {
+	      page.close();
+	    } else {
+	      page.postMessage({
+	        type: type,
+	        params: params
+	      }, popupUrl);
+	    }
+	  };
+	};
+
+	var prepend_protocol = function(url) {
+	  // Preprend https if the url begis with //www.
+	  if (url.indexOf('//www.') === 0) {
+	    url = 'https:' + url;
+	  }
+	  return url;
+	};
+
+    var urlFromSameDomain = function(url1, url2) {
+      if (!url1.startsWith('http') || !url2.startsWith('http')) {
+        return false;
+      }
+      var u1 = parseURL(url1);
+      var u2 = parseURL(url2);
+      var u1host = u1.host.replace(/^\w+\./, 'www.');
+      var u2host = u2.host.replace(/^\w+\./, 'www.');
+      return u1.protocol === u2.protocol && u1host === u2host;
+    };
+
+    function parseURL(url) {
+      var parser = document.createElement('a');
+      parser.href = url;
+      return parser;
+    }
+
+    var setCatalog = function(message) {
+      if (!message.params.catalog_id) {
+        console.error('Facebook Extension Error: catalog id not received', message.params);
+        window.sendToFacebook('fail set catalog', message.params);
+        return;
+      }
+
+      window.sendToFacebook('ack set catalog', message.params);
+      // handle the storing of the catalog id
+      console.log('catalog id = ' + message.params.catalog_id);
+    };
+
+    var setPixel = function(message) {
+      if (!message.params.pixel_id) {
+        console.error('Facebook Ads Extension Error: pixel id not received', message.params);
+        showError('Facebook Extension Error: pixel id not received');
+        window.sendToFacebook('fail set pixel', message.params);
+        return;
+      }
+
+      window.facebookAdsToolboxConfig.pixel.pixel_id = message.params.pixel_id;
+      window.sendToFacebook('ack set pixel', message.params);
+      // handle the storing of the pixel id
+      console.log('pixel id = ' + message.params.pixel_id);
+    };
+
+    var setMerchantSettings = function(message) {
+      if (!message.params.setting_id) {
+        console.error('Facebook Extension Error: merchant id not received', message.params);
+        window.sendToFacebook('fail set merchant settings', message.params);
+        return;
+      }
+
+      window.facebookAdsToolboxConfig.diaSettingId = message.params.setting_id;
+      window.sendToFacebook('ack set merchant settings', message.params);
+      // <-- handle the storing of the merchant id
+      console.log('merchant id = ' + message.params.setting_id);
+    };
+
+    var setPage = function(message) {
+      if (!message.params.page_id || !message.params.page_token) {
+        console.error('Facebook Extension Error: page id or page token not received', message.params);
+        window.sendToFacebook('fail page access token', message.params);
+        return;
+      }
+
+	  window.facebookAdsToolboxConfig.page_id = message.params.page_id;
+	  window.sendToFacebook('ack page access token', message.params);
+	  // <-- handle the storing of the page id
+	  console.log('page id = ' + message.params.page_id);
+    };
+
+    var iFrameListener = function(event) {
+      // Fix for web.facebook.com
+      const origin = event.origin || event.originalEvent.origin;
+      if (origin != window.facebookAdsToolboxConfig.popupOrigin &&
+        urlFromSameDomain(origin, window.facebookAdsToolboxConfig.popupOrigin)) {
+        window.facebookAdsToolboxConfig.popupOrigin = origin;
+      }
+			console.log(event);
+      switch (event.data.type) {
+        case 'get dia settings':
+          window.sendToFacebook('dia settings', window.diaConfig);
+          break;
+       case 'set merchant settings':
+          setMerchantSettings(event.data);
+          break;
+        case 'set catalog':
+          setCatalog(event.data);
+          break;
+        case 'set pixel':
+          setPixel(event.data);
+          break;
+        case 'gen feed':
+          break;
+        case 'set page access token':
+          setPage(event.data);
+          break;
+        case 'reset':
+          // <-- handle the reset function
+          console.log('reset');
+          break;
+      }
+    };
+
+    var addEventListenerForFAE = function (obj,evt) {
+      if ('addEventListener' in obj) {
+        obj.addEventListener(evt, iFrameListener, false);
+      } else if ('attachEvent' in obj) {//IE
+        obj.attachEvent('on' + evt, iFrameListener);
+      }
+    };
+
+    addEventListenerForFAE(window,'message');
+</script>
+</head>
+<body>
+<button id="start_fae" onclick="launchDiaWizard()">Start FAE</button>
+
+</body></html>
