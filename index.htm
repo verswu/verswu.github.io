@@ -5,7 +5,7 @@
 <script>
 	window.facebookAdsToolboxConfig = {
       hasGzipSupport: 'true',
-      popupOrigin: 'https://www.facebook.com',
+      popupOrigin: 'https://www.wuk.sb.facebook.com',
       feedWasDisabled: 'true',
       platform: 'UEESHOP', // <-- put in your platform name here
       pixel: {
@@ -59,7 +59,7 @@
 	  if (window.facebookAdsToolboxConfig.debug_url) {
 	    console.log(window.facebookAdsToolboxConfig);
 	  }
-
+		console.log(popupUrl);
 	  var page = window.open(
 	    popupUrl + '/login.php?display=popup&next=' + encodeURIComponent(popupUrl + path + '?origin=' + window.originParam + '&merchant_settings_id=' + window.facebookAdsToolboxConfig.diaSettingId),
 	    'DiaWizard',
