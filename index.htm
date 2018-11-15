@@ -28,7 +28,7 @@
         feedPingUrl: '',
         samples: []
       },
-			enabledPlugins: ['PRODUCT_CATALOG'],
+			enabledPlugins: ['PRODUCT_CATALOG', 'HOTEL_CATALOG'], // <-- make this travel
     };
 
     var launchDiaWizard = function() {
@@ -170,7 +170,6 @@
         urlFromSameDomain(origin, window.facebookAdsToolboxConfig.popupOrigin)) {
         window.facebookAdsToolboxConfig.popupOrigin = origin;
       }
-			console.log(event);
       switch (event.data.type) {
         case 'get dia settings':
           window.sendToFacebook('dia settings', window.diaConfig);
