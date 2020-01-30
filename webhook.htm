@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script>
+    window.fbAsyncInit = function() {
+    //2. FB JavaScript SDK configuration and setup
+        FB.init({
+            appId      : '131584983518288', // FB App ID
+            cookie     : true,  // enable cookies to allow the server to access the session
+            xfbml      : true,  // parse social plugins on this page
+            version    : 'v4.0' // uses graph api version v4.0
+        });
+    };
+
+    //1. Load the JavaScript SDK asynchronously
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+     //3. Facebook login with JavaScript SDK
+    function launchFBE() {
+        FB.login(function (response) {
+            if (response.authResponse) {
+                // returns a User Access Token with scopes requested
+                const accessToken = response.authResponse.accessToken;
+                const message = {
+                    'success':true,
+                    'access_token':accessToken,
+                };
+                // store access token for later
+            } else {
+              console.log('User cancelled login or did not fully authorize.');
+            }
+        }, {
+            scope: 'catalog_management,manage_business_extension',
+          // refer to the extras object table for details
+            extras: {
+                "setup":{
+                  "external_business_id":"1915223155181289",
+                  "timezone":"America\/Los_Angeles",
+                  "currency":"USD",
+                  "business_vertical":"ECOMMERCE"
+                },
+                "business_config":{
+                  "business":{
+                     "name":"Kent Biz"
+                  }
+                },
+                "repeat":false
+            }
+        });
+    }
+</script>
+</head>
+
+<body>
+
+<button onclick="launchFBE()"> Launch FBE </button>
+
+</body>
+
+</html>
